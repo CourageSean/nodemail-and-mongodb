@@ -224,7 +224,7 @@ app.get("/resend",(req,res) => {
 
 
  //==========Confirm request =========== //
-app.post("/confirm/:id",(req,res) => {
+app.get("/confirm/:id",(req,res) => {
 
 
 
