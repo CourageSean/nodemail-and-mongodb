@@ -41,7 +41,7 @@ app.use(flash());
 
 app.get("/", (req,res) => {
   
-    res.render("pages/index")
+    res.render("pages/login")
 })
 
 app.get("/login", (req,res) => {
@@ -50,6 +50,12 @@ app.get("/login", (req,res) => {
     
     res.render("pages/login")
 })
+
+app.get("/register", (req,res) => {
+  
+    res.render("pages/register")
+})
+
 
 app.post("/secret",async (req,res) => {
     if(  UsersCheck.some( elt => elt['email'] === req.body.email && bcrypt.compareSync(req.body.password,elt.password) && elt.status==="active")){
@@ -66,11 +72,11 @@ app.post("/secret",async (req,res) => {
      
         req.flash("errorMail","not correct")
         res.redirect("/login",)
-    }else if(UsersCheck.some( elt => elt['email'] !== req.body.email )){
+    }else if(UsersCheck.some( elt => elt['email'] !== req.body.email  )){
      
-        req.flash("errorMail","not correct")
+        // req.flash("errorMail","not correct")
         req.flash("register","not correct")
-        res.redirect("/",)
+        res.redirect("/register",)
     }
     
     else{
