@@ -9,7 +9,7 @@ const session =require("express-session")
 const flash=require('express-flash-messages') 
 const myPlaintextPassword = 's0/\/\P4$$w0rD';
 const someOtherPlaintextPassword = 'not_bacon';
-const PORT = process.env.Port || 3003
+const PORT = process.env.PORT || 3003
 
 
 const app = express()
