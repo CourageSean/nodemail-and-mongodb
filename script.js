@@ -9,20 +9,50 @@ const session =require("express-session")
 const flash=require('express-flash-messages') 
 const myPlaintextPassword = 's0/\/\P4$$w0rD';
 const someOtherPlaintextPassword = 'not_bacon';
+const mongoose = require("mongoose")
+const User = require("./models/user")
 const PORT = process.env.PORT || 3003
+
+const dbURI = "mongodb+srv://sean:badnewzzmp23@nodemailer.glt2i.mongodb.net/Nodemail?retryWrites=true&w=majority"
 
 
 const app = express()
 
-app.listen(PORT,() => {
-  console.log("listening port 3003")
-})
+mongoose.connect(dbURI,{useNewUrlParser:true, useUnifiedTopology:true})
+.then((result) =>app.listen(PORT,() => {
+    console.log("listening port 3003")
+  }))
+ .catch((err) => {
+   console.log(err)
+ })
+
+
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 
+
+
+app.get("/test",(req,res) => {
+  const user = new User({
+      id:uuidv4(),
+      firstname:"bob",
+      lastname:"doe",
+      email:"test@gmail.com",
+      status:"pending",
+      password:"1234"
+  })
+
+  user.save()
+  .then((result)=>{
+      res.send(result)
+  }).catch((err)=>{
+      console.log(err)
+  })
+
+})
 
 app.use(flash());
      app.use(session({ secret:"secret",resave:false,saveUninitialized:true}))
@@ -117,23 +147,37 @@ app.post('/send', async (req, res) => {
 
 
     let id = uuidv4()
-    let confirmCode = "https://still-stream-15448.herokuapp.com/confirm/"+id
-       let newUser = {
-           id:id,
+    // let confirmCode = "http://localhost:3003/confirm/"+id
+    //    let newUser = {
+    //        id:id,
            
-           firstname: req.body.firstname,
+    //        firstname: req.body.firstname,
+    //        lastname: req.body.lastname,
+    //        email: req.body.email,
+    //        status: "pending",
+    //        confirmationCode: confirmCode,
+    //        password: hashedPassword
+   
+    //    }
+
+    const user = new User({
+               firstname: req.body.firstname,
            lastname: req.body.lastname,
            email: req.body.email,
            status: "pending",
-           confirmationCode: confirmCode,
+        //    confirmationCode: confirmCode,
            password: hashedPassword
-   
-       }
+    })
 
 
-    let info = transporter.sendMail({
+    user.save()
+    .then((result) => {
+      console.log(result.firstname)
+      const confirmCode ="http://localhost:3003/confirm/"+result._id
+
+          let info = transporter.sendMail({
         from: '"Super Sean 👻" <YourEmail>', // sender address
-        to: req.body.email, // list of receivers
+        to: result.email, // list of receivers
         subject: "SUPER BOY ✔", // Subject line
         text: "DU BIST SUPER?", // plain text body
         html: `<p>please confirm your registration with this link </p> <br> <a href=${confirmCode}>Click here to confirm Email</a>`,
@@ -141,44 +185,48 @@ app.post('/send', async (req, res) => {
 
     }, (err, info) => {
         if (err) {throw err
-        }else{
+        }else{}
+        });
+    })
 
-            fs.readFile("./data/Users.json","utf-8", (err,data) => {
-                if(err) {throw err
-                }else{
-                 const infoo =JSON.parse(data)
-                 infoo.push(newUser)
-                    try{
+//     let info = transporter.sendMail({
+//         from: '"Super Sean 👻" <YourEmail>', // sender address
+//         to: req.body.email, // list of receivers
+//         subject: "SUPER BOY ✔", // Subject line
+//         text: "DU BIST SUPER?", // plain text body
+//         html: `<p>please confirm your registration with this link </p> <br> <a href=${confirmCode}>Click here to confirm Email</a>`,
+        
+
+//     }, (err, info) => {
+//         if (err) {throw err
+//         }else{
+
+//             fs.readFile("./data/Users.json","utf-8", (err,data) => {
+//                 if(err) {throw err
+//                 }else{
+//                  const infoo =JSON.parse(data)
+//                  infoo.push(newUser)
+//                     try{
                    
-                    }catch (err){
-                        console.log("error")
-                    }
+//                     }catch (err){
+//                         console.log("error")
+//                     }
                 
              
              
              
-             fs.writeFile("./data/Users.json", JSON.stringify(infoo), err =>{
-                 if(err){ throw err
-                 }else{
-                     console.log("file written")
-                 }
-             })
-             
-             
-                }
-              })
-        }
+//              fs.writeFile("./data/Users.json", JSON.stringify(infoo), err =>{
+//                  if(err){ throw err
+//                  }else{
+//                      console.log("file written")
+//                  }
+//              })
+           
+//                 }  })
+//         }
+//   });
 
-    });
-
-
- 
-
-
-
-   
-
-    res.render('pages/registration')
+    res.render('pages/registrationSent')
 })
 
 
@@ -224,36 +272,47 @@ app.get("/resend",(req,res) => {
 
 
  //==========Confirm request =========== //
-app.get("https://still-stream-15448.herokuapp.com/confirm/:id",(req,res) => {
+app.get("/confirm/:id",(req,res) => {
+
+const id = req.params.id
+console.log(id)
+User.findByIdAndUpdate(id,{"status":"active"},(err,result) => {
+  
+    if(err){
+        res.send(err)
+    }
+    else{
+        res.render("pages/confirmed")
+    }
+})
 
 
 
+//     fs.readFile("./data/Users.json","utf-8", (err,data) => {
 
-    fs.readFile("./data/Users.json","utf-8", (err,data) => {
+//         if(err) {throw err
+//         }else{
+//          const infoo =JSON.parse(data)
+//          const pendingUser  = infoo.find((elt) => {
+//           return elt.id === req.params.id                     
+//           })
+//           console.log(pendingUser,"pendingUser")
+//           pendingUser.status = "active"
+//           const pendingOutfiltered = infoo.filter((elt) => {
+//             return elt.id !== req.params.id
+//           })
+//           pendingOutfiltered.push(pendingUser)
 
-        if(err) {throw err
-        }else{
-         const infoo =JSON.parse(data)
-         const pendingUser  = infoo.find((elt) => {
-          return elt.id === req.params.id                     
-          })
-          console.log(pendingUser,"pendingUser")
-          pendingUser.status = "active"
-          const pendingOutfiltered = infoo.filter((elt) => {
-            return elt.id !== req.params.id
-          })
-          pendingOutfiltered.push(pendingUser)
+//           fs.writeFile("./data/Users.json", JSON.stringify(pendingOutfiltered), err =>{
+//             if(err){ throw err
+//             }else{
+//                 console.log("file written")
+//             }
+//         })
+//         //   console.log(JSON.stringify(pendingOutfiltered))
+//         }
+//     })
 
-          fs.writeFile("./data/Users.json", JSON.stringify(pendingOutfiltered), err =>{
-            if(err){ throw err
-            }else{
-                console.log("file written")
-            }
-        })
-        //   console.log(JSON.stringify(pendingOutfiltered))
-        }
-    })
-
-console.log(req.params.id)
-  res.render("pages/confirmed")
+// console.log(req.params.id)
+//   res.render("pages/confirmed")
 })
