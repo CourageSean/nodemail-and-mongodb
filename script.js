@@ -117,7 +117,7 @@ app.post('/send', async (req, res) => {
 
 
     let id = uuidv4()
-    let confirmCode = "http://localhost:3003/confirm/"+id
+    let confirmCode = "https://still-stream-15448.herokuapp.com/confirm/"+id
        let newUser = {
            id:id,
            
@@ -189,8 +189,8 @@ app.get("/resend",(req,res) => {
     const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
-            user: process.env.user,
-            pass: process.env.pass
+            user: "nodemailer2022@gmail.com",
+            pass: "supercode"
         }
     });
 
