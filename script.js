@@ -102,8 +102,8 @@ app.post('/send', async (req, res) => {
     const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
-            user: process.env.user,
-            pass: process.env.pass
+            user: "nodemailer2022@gmail.com",
+            pass: "supercode"
         }
     });
 
