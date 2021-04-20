@@ -224,7 +224,7 @@ app.get("/resend",(req,res) => {
 
 
  //==========Confirm request =========== //
-app.get("/confirm/:id",(req,res) => {
+app.get("https://still-stream-15448.herokuapp.com/confirm/:id",(req,res) => {
 
 
 
